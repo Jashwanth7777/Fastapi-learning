@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime  # Import datetime module
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import StreamingResponse
 from PIL import Image
@@ -43,14 +44,18 @@ async def crop_image(
     # Define the save path
     save_directory = "cropped_images"
     os.makedirs(save_directory, exist_ok=True)  # Create the directory if it doesn't exist
-    save_path = os.path.join(save_directory, f"cropped_{file.filename}")
+
+    # Add timestamp to the image name
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+    new_image_name = f"cropped_{timestamp}_{file.filename}"
+    save_path = os.path.join(save_directory, new_image_name)
 
     # Save the cropped image to the specified path
     cropped_image.save(save_path)
 
     # Log the cropped image details in the database
     new_log = ImageLog(
-        image_name=file.filename,
+        image_name=new_image_name,
         cropped_image_path=save_path
     )
     db.add(new_log)
